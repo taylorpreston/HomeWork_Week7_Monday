@@ -3,9 +3,10 @@ console.log('hi')
 import React from 'react';
 import ReactDOM from 'react-dom';
 import jQuery from 'jquery';
-import Profile from './profile'
+import Profile from './profile';
 import Header from './header';
-import Repos from './repos'
+import Repos from './repos';
+import blah from './token';
 
 class App extends React.Component {
 
@@ -13,26 +14,52 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      profileInfo:[]
+      hasLoaded: false,
+      profileInfo:{},
+      repos:[]
     }
   }
 
   componentDidMount() {
+    this.grabProfileInfo()
+    this.grabRepos()
+  }
+
+  grabProfileInfo(){
     jQuery.ajax('https://api.github.com/users/taylorpreston').then( response => {
       this.setState({
-          profileName: response.login,
-          profileImgUrl: response.avatar_url,
+          hasLoaded: true,
+          profileInfo: response
       });
-      console.log(this.state.profileName)
+
+    });
+  }
+
+  grabRepos(){
+    jQuery.ajax('https://api.github.com/users/taylorpreston/repos').then( response => {
+      this.setState({
+          hasLoaded: true,
+          repos: response
+      });
+
     });
   }
 
   render () {
+    console.log('Rendered');
+    if (this.props.hasLoaded === false) {
+     return <div>Loading...</div>
+   }
+
     return(
       <main>
-        <Header data={this.state.profileName}/>
-        <Profile/>
-        <Repos/>
+        <Header/>
+        <Profile  key = {this.state.profileInfo.id}
+                  profileInfo={this.state.profileInfo}
+                  hasLoaded={this.state.hasLoaded}/>
+        <Repos
+               repos={this.state.repos}
+               hasLoaded={this.state.hadLoaded}/>
       </main>
     )
   }
